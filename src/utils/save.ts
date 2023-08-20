@@ -1,8 +1,7 @@
 // Méthode utilitaire pour enregistrer des données JSON dans le localStorage
 export function saveDataToLocalStorage(key: string, data: any): void {
   localStorage.setItem(key, JSON.stringify(data))
-  console.log('Données enregistrées dans le localStorage.')
-}
+ }
 
 // Méthode utilitaire pour télécharger un fichier JSON à partir du localStorage
 export function downloadJSONFromLocalStorage(key?: string): Promise<void> {
@@ -27,3 +26,4 @@ export function downloadJSONFromLocalStorage(key?: string): Promise<void> {
     }
   })
 }
+ 
