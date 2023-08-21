@@ -28,7 +28,7 @@
         </div>
       </Dialog>
       <div id="pin-list" class="pin-list">
-        <!-- pin list here -->
+        <!-- Liste des épingles -->
         <!-- <canvas @click="toggleDialog" ref="canvas"></canvas> -->
         <img @click="toggleDialog" :src="handleEmptyImage" ref="boardImg" />
       </div>
