@@ -5,36 +5,41 @@
         @after-hide="handleDialogClose"
         :dismissableMask="true"
         v-model:visible="visible"
+        header="Ajoutez une nouvelle épingle"
         modal
-        header="Header"
-        :style="{ width: '50vw' }"
       >
-        <div class="card flex justify-content-center">
-          <template v-if="!preview">
-            <div class="flex flex-column gap-2">
-              <label for="title">Title :{{ title }}, Coord [{{ x }};{{ y }}]</label>
-              <InputText id="title" v-model="title" aria-describedby="title-help" />
-              <small id="title-help">Donner un nom à l'épingle.</small>
+        <form @submit.prevent="">
+          <label for="title">Titre</label>
+          <InputText
+            id="title"
+            v-model="newTag.title"
+            aria-describedby="title-help"
+            placeholder="..."
+          />
+          <br />
+          <label for="title">Ajoutez une description</label>
+          <Editor editor-style="height: 350px" id="description" v-model="newTag.description" />
+          <div class="pen-tool">
+            <label for="color">Couleur</label>
+            <ColorPicker v-model="settings.color" for="color"></ColorPicker>
+            <label for="size">Taille</label>
+            <div class="pen-tool-size">
+              <span
+                v-for="(size, index) in tagSizes"
+                :key="index"
+                :style="{ width: size, height: size }"
+                @click="changePinSize(size)"
+              ></span>
             </div>
-            <Button label="Confirmer" :disabled="isError" @click="handlePin"></Button>
-            <p v-show="isError">Le titre ne peut pas être vide.</p>
-          </template>
-          <template v-else>
-            <div>
-              {{ preview }}
-              <!-- TODO : AJOUTER UNE DIV ACTION AVEC DES BOUTONS SUPPRIMER/MODIFIER/AUTRES -->
-            </div>
-          </template>
-        </div>
+          </div>
+        </form>
+        <Button label="Confirmer" :disabled="isError" @click="handleCreateTag"></Button>
+        <p v-show="isError" class="error-msg">Le titre ne peut pas être vide.</p>
       </Dialog>
-      <div id="pin-list" class="pin-list">
+      <div id="board" class="board">
         <!-- Liste des épingles -->
-        <!-- <canvas @click="toggleDialog" ref="canvas"></canvas> -->
-        <img @click="toggleDialog" :src="handleEmptyImage" ref="boardImg" />
+        <img @click="handleClick" :src="getBackgroundImg" ref="boardImg" />
       </div>
-    </div>
-    <div>
-      <PinList @highlight-point="handleHighlightPoint" :tags="board?.tags" />
     </div>
   </section>
 </template>
@@ -47,37 +52,64 @@ import { saveDataToLocalStorage } from '@/utils/save'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
-import PinList from './PinList.vue'
 import { v4 as uuidv4 } from 'uuid'
+import { useSettingsStore } from '@/stores/settings.store'
+import Editor from 'primevue/editor'
 
-export interface Settings {
+export interface Board {
   image: string
   tags: Tag[]
 }
+
 export interface Tag {
   id: string
   title: string
+  description: string
   x: number
   y: number
+  size: string
+  color: string
 }
+const initialState: Tag = {
+  color: '',
+  description: '',
+  id: '',
+  size: '',
+  title: '',
+  x: 0,
+  y: 0
+}
+const settingsStore = useSettingsStore()
 const boardStore = useBoardStore()
 const { image, tags } = storeToRefs(boardStore)
-const board = ref<Settings>()
-const x = ref<number>()
-const y = ref<number>()
-const title = ref<string>('')
-const preview = ref<Tag | null>(null)
+const { settings } = storeToRefs(settingsStore)
+const board = ref<Board>()
+const newTag = ref<Tag>(initialState)
 const visible = ref<boolean>(false)
+const tagSizes = {
+  small: '15px',
+  medium: '20px',
+  large: '25px'
+}
+const emit = defineEmits(['click-tag'])
 
-function toggleDialog(event: MouseEvent) {
+function handleClick(event: MouseEvent) {
   if (image.value) {
-    x.value = event.clientX
-    y.value = event.clientY
+    newTag.value.x = event.clientX
+    newTag.value.y = event.clientY
     visible.value = !visible.value
   }
 }
+
+// TODO : REFAIRE CA AU PROPRE
+// ( UTILISER LA REACTIVITÉ AVEC L'OBJECT NEWTAG -> INITIALSTATE)
 function handleDialogClose() {
-  preview.value = null
+  newTag.value.title = ''
+  newTag.value.description = ''
+}
+
+function changePinSize(size: string) {
+  settings.value.size = size
 }
 
 function handleHighlightPoint(id: string) {
@@ -101,31 +133,35 @@ function handleHighlightPoint(id: string) {
   }
 }
 
-function handlePin() {
-  if (board.value && x.value && y.value) {
+function handleCreateTag() {
+  if (board.value && newTag.value) {
     visible.value = true
-    const pinTittle = title.value
+    const tagTitle = newTag.value.title
     const id = uuidv4()
-    const newPoint = { id: id, title: pinTittle, x: x.value, y: y.value }
-    createPoint(newPoint)
-    board.value?.tags.push(newPoint)
+    newTag.value = {
+      ...newTag.value,
+      id: id,
+      title: tagTitle,
+      size: settings.value.size,
+      color: '#' + settings.value.color
+    }
+    createPoint(newTag.value)
+    board.value?.tags.push(newTag.value)
     saveDataToLocalStorage('tag-me-up-image', board.value.image)
     saveDataToLocalStorage('tag-me-up-tags', board.value.tags)
     handleHighlightPoint(id)
-    x.value = 0
-    y.value = 0
-    title.value = ''
+    newTag.value = initialState
     visible.value = false
   }
 }
 
 function createPoint(point: Tag) {
-  const wrapper = document.getElementById('pin-list')
+  const wrapper = document.getElementById('board')
   const span = document.createElement('span')
   span.title = point.title
   span.className = 'tag'
   span.id = point.id
-  span.onclick = () => handleClick(point.id)
+  span.onclick = () => emit('click-tag', point.id)
 
   span.style.position = 'absolute'
   span.style.left = `${point.x}px`
@@ -143,28 +179,22 @@ function createPoint(point: Tag) {
   span.onmouseleave = () => {
     span.style.outline = 'none'
     span.style.scale = '1'
-    span.style.backgroundColor = 'red'
+    span.style.backgroundColor = point.color || 'white'
   }
 
   span.style.zIndex = '10'
-  span.style.width = '20px'
-  span.style.height = '20px'
+  span.style.width = point.size
+  span.style.height = point.size
   span.style.borderRadius = '50%'
-  span.style.backgroundColor = 'red'
+  span.style.backgroundColor = point.color || 'white'
 
   wrapper?.appendChild(span)
-}
-function handleClick(id: string) {
-  const previewTag = board.value?.tags.find((tag) => tag.id === id)
-  if (previewTag) {
-    preview.value = previewTag
-    visible.value = true
-  }
 }
 
 watch(
   [image],
   () => {
+    // saveDataToLocalStorage('tag-me-up-image', image)
     board.value = { image: image.value.toString(), tags: tags.value }
     tags.value.map((tag) => {
       createPoint(tag)
@@ -173,8 +203,8 @@ watch(
   { immediate: true }
 )
 
-const isError = computed(() => title.value.length === 0)
-const handleEmptyImage = computed(() => {
+const isError = computed(() => newTag.value.title.length === 0)
+const getBackgroundImg = computed(() => {
   if (!image.value || image.value === '') {
     return '/not_found.jpg'
   }
@@ -183,9 +213,12 @@ const handleEmptyImage = computed(() => {
 </script>
 
 <style scoped lang="scss">
-.pin-list {
+.board {
   img {
-    border: 1px solid red;
+    cursor: pointer;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     width: 800px;
     height: 800px;
     object-fit: contain;
@@ -193,5 +226,26 @@ const handleEmptyImage = computed(() => {
 }
 section {
   display: flex;
+}
+.error-msg {
+  color: red;
+}
+
+.pen-tool {
+  display: flex;
+}
+.pen-tool-size {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  span {
+    margin: 0 5px;
+    &:hover {
+      cursor: pointer;
+    }
+    border-radius: 50%;
+    background-color: black;
+    border: '1px solid red';
+  }
 }
 </style>

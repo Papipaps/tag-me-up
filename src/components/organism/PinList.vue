@@ -1,41 +1,66 @@
 <template>
-  <div>PinList</div>
-  <ul v-if="tags">
+  <ul class="pin-list" v-if="tags">
     <li v-for="tag in tags" :key="tag.id">
-      <p @mouseover="highlightPoint(tag.id)">{{ tag.title }}</p>
+      <PinCard :tag="tag" @click="openTag(tag.id)" @mouseover="highlightPoint(tag.id)" />
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
 import type { Tag } from './PinMap.vue'
+import PinCard from './PinCard.vue'
 
 interface Props {
   tags?: Tag[]
 }
 const { tags } = defineProps<Props>()
-const emit = defineEmits(['highlight-point'])
+const emit = defineEmits(['click-tag'])
+
 function highlightPoint(id: string) {
-  emit('highlight-point', id)
+  const preview = document.getElementById(id)
+  if (preview) {
+    const mouseEnterEvent = new MouseEvent('mouseover', {
+      bubbles: true,
+      cancelable: true
+    })
+
+    preview.dispatchEvent(mouseEnterEvent)
+
+    setTimeout(() => {
+      const mouseLeaveEvent = new MouseEvent('mouseleave', {
+        bubbles: true,
+        cancelable: true
+      })
+
+      preview.dispatchEvent(mouseLeaveEvent)
+    }, 500)
+  }
+}
+
+function openTag(id: string) {
+  emit('click-tag', id)
 }
 </script>
 
 <style scoped lang="scss">
-ul {
+.pin-list {
+  border: 1px solid blue;
   background: white;
-  border: rgba(0, 0, 0, 0.3);
   border-radius: 5px;
   list-style: none;
-  min-width: 100px;
   padding: 0 10px;
-}
-li {
-  margin-bottom: 5px;
-  height: 100%;
-  background: white;
-  &:hover {
-    cursor: pointer;
-    filter: brightness(0.9);
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(200px, 1fr)
+  ); /* Changez les valeurs selon vos besoins */
+  li {
+    margin-bottom: 5px;
+    background: white;
+    &:hover {
+      cursor: pointer;
+      filter: brightness(0.9);
+    }
   }
 }
 </style>

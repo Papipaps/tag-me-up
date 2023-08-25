@@ -1,16 +1,18 @@
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
 
-const STORE_NAME = 'tmuSettings'
+const STORE_NAME = 'useSettings'
 
 interface Settings {
-  background: string
+  size:string,
+  color:string
 }
 
 export const useSettingsStore = defineStore(STORE_NAME, {
   state: () => ({
     settings: useStorage(STORE_NAME, {
-      background: ''
+      size: '15px',
+      color: 'white'
     } as Settings)
   }),
   actions: {

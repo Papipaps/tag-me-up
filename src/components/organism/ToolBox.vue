@@ -1,11 +1,12 @@
 <template>
   <Toast position="top-right" group="br" />
-  <div class="card">
+  <div class="actions">
     <FileUpload
       @select="handleSelect($event, 'select')"
       name="demo[]"
       mode="basic"
       accept="image/*"
+      chooseLabel="Importer une image"
       :maxFileSize="10000000"
     >
       <template #empty>
@@ -14,7 +15,7 @@
       </template>
     </FileUpload>
     <FileUpload
-      chooseLabel="Importer"
+      chooseLabel="Importer JSON"
       @select="handleSelect($event, 'import')"
       name="demo[]"
       mode="basic"
@@ -22,9 +23,10 @@
       :maxFileSize="10000000"
     >
     </FileUpload>
-    <Button label="Save" @click="exportBoard"></Button>
-    <Button label="Clear" @click="clearBoard"></Button>
+    <Button label="Save" @click="exportBoard" severity="success"></Button>
+    <Button label="Clear" @click="clearBoard" severity="danger"></Button>
   </div>
+ 
 </template>
 
 <script setup lang="ts">
@@ -33,11 +35,13 @@ import { useBoardStore } from '@/stores/board.store'
 import { storeToRefs } from 'pinia'
 import { downloadJSONFromLocalStorage, saveDataToLocalStorage } from '@/utils/save'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast'
-
+import Toast from 'primevue/toast' 
+ 
 const backgroundStore = useBoardStore()
-const { image, tags } = storeToRefs(backgroundStore)
+ 
+const { image, tags: tags } = storeToRefs(backgroundStore)
 const toast = useToast()
+
 
 function handleSelect(e: any, mode: 'import' | 'select') {
   const file = e.originalEvent.target.files[0]
@@ -50,7 +54,7 @@ function handleSelect(e: any, mode: 'import' | 'select') {
     if (data) {
       if (mode === 'select') {
         image.value = data
-      } else {
+      } else if (mode === 'import') {
         const fileContent = JSON.parse(data as string)
         image.value = JSON.parse(fileContent.image)
         tags.value = JSON.parse(fileContent.tags)
@@ -64,7 +68,7 @@ function handleSelect(e: any, mode: 'import' | 'select') {
 function clearBoard() {
   localStorage.removeItem('tag-me-up-image')
   localStorage.removeItem('tag-me-up-tags')
-  const pinList = document.getElementById('pin-list')
+  const pinList = document.getElementById('board')
   if (pinList) {
     var tagElements = pinList.querySelectorAll('.tag')
     tagElements.forEach(function (element) {
@@ -76,12 +80,12 @@ function clearBoard() {
 }
 
 function exportBoard() {
-  if (image.value && image.value !== '') {
+  if (image.value !== '') {
     downloadJSONFromLocalStorage().then(() => {
       toast.add({
         severity: 'success',
         summary: 'Success Message',
-        detail: 'Message Content',
+        detail: 'Tableau enregistré avec succes !',
         group: 'br',
         life: 3000
       })
@@ -89,11 +93,19 @@ function exportBoard() {
   } else {
     toast.add({
       severity: 'error',
-      summary: 'Success Message',
-      detail: 'Message Content',
+      summary: 'Action impossible',
+      detail: 'Aucun tableau à enregistrer',
       group: 'br',
       life: 3000
     })
   }
 }
 </script>
+<style lang="scss" scoped>
+.actions {
+  display: flex;
+  margin: 5px;
+  gap: 5px;
+}
+
+</style>
