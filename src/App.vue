@@ -2,12 +2,15 @@
 import { onMounted, ref } from 'vue'
 import { useBoardStore } from './stores/board.store'
 import { storeToRefs } from 'pinia'
+import { PrimeIcons } from 'primevue/api'
+
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
+
 import PinMap, { type Tag } from './components/organism/PinMap.vue'
 import ToolBox from './components/organism/ToolBox.vue'
 import PinList from './components/organism/PinList.vue'
 import TagModal from './components/organism/TagModal.vue'
-import Dialog from 'primevue/dialog'
-import Button from 'primevue/button'
 
 const boardStore = useBoardStore()
 const { image, tags } = storeToRefs(boardStore)
@@ -17,7 +20,6 @@ const preview = ref<Tag | null>()
 function handleTagSelection(id: string) {
   const previewTag = tags.value.find((tag) => tag.id === id)
   if (previewTag) {
-    console.log(previewTag)
     preview.value = previewTag
     isDialogVisible.value = true
   }
@@ -47,13 +49,11 @@ onMounted(() => {
       @click="toggleDialog"
     >
       <Button
-        icon="pi pi-check"
+        :icon="PrimeIcons.CHEVRON_LEFT"
         rounded
-        outlined
         aria-label="Filter"
-      >
-        {{ '<' }}
-      </Button>
+        style="border: 1px solid black;"
+      />
     </div>
     <ToolBox />
     <PinMap @click-tag="handleTagSelection" />
@@ -81,8 +81,9 @@ onMounted(() => {
       >
         <template #header>
           <h3>
-            Retrouvez ici toutes vos épingles <br>
-            (plus pratique que de chercher sur l'image 😎✌️)
+            Retrouvez ici toutes vos épingles
+            <br>
+            <small style="font-weight: lighter;">plus pratique que de chercher sur l'image 😎✌️</small>
           </h3>
         </template>
         <PinList
@@ -103,7 +104,6 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-
 .toggle-pin-list {
   position: absolute;
   z-index: 10;

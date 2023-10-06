@@ -1,67 +1,32 @@
-<template>
-  <Toast
-    position="top-right"
-    group="br"
-  />
-  <div class="actions">
-    <FileUpload
-      name="demo[]"
-      mode="basic"
-      accept="image/*"
-      choose-label="Importer une image"
-      :max-file-size="10000000"
-      @select="handleSelect($event, 'select')"
-    >
-      <template #empty>
-        <img src="/not_found.jpg">
-      </template>
-    </FileUpload>
-    <FileUpload
-      choose-label="Importer JSON"
-      name="demo[]"
-      mode="basic"
-      accept="application/json"
-      :max-file-size="10000000"
-      @select="handleSelect($event, 'import')"
-    />
-    <Button
-      label="Save"
-      severity="success"
-      @click="exportBoard"
-    />
-    <Button
-      label="Clear"
-      severity="danger"
-      @click="clearBoard"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
+import { PrimeIcons } from 'primevue/api'
 import { useToast } from 'primevue/usetoast'
 import { useBoardStore } from '@/stores/board.store'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { downloadJSONFromLocalStorage, saveDataToLocalStorage } from '@/utils/save'
 import Button from 'primevue/button'
 import Toast from 'primevue/toast'
 
+const { t } = useI18n()
 const backgroundStore = useBoardStore()
 
 const { image, tags: tags } = storeToRefs(backgroundStore)
 const toast = useToast()
 
-function handleSelect(e: any, mode: 'import' | 'select') {
-  const file = e.originalEvent.target.files[0]
+function handleSelect(e: any, mode: 'json' | 'image') {
+  const file = e.target.files[0]
   const reader = new FileReader()
-  if (mode === 'select') reader.readAsDataURL(file)
-  if (mode === 'import') reader.readAsText(file)
+  if(!file) return
+  if (mode === 'image') reader.readAsDataURL(file)
+  if (mode === 'json') reader.readAsText(file)
 
   reader.onloadend = () => {
     const data = reader.result as string
     if (data) {
-      if (mode === 'select') {
+      if (mode === 'image') {
         image.value = data
-      } else if (mode === 'import') {
+      } else if (mode === 'json') {
         const fileContent = JSON.parse(data as string)
         image.value = JSON.parse(fileContent.image)
         tags.value = JSON.parse(fileContent.tags)
@@ -108,10 +73,84 @@ function exportBoard() {
   }
 }
 </script>
+<template>
+  <Toast
+    position="top-right"
+    group="br"
+  />
+  <div class="actions">
+    <Button
+      v-tooltip.top="$t('load')"
+      class="upload-wrapper-btn"
+    >
+      <label
+        for="imageUpload"
+        :class="PrimeIcons.IMAGE "
+        style="font-size: 1.5rem"
+      >
+        <input
+          @change="handleSelect($event,'image')"
+          type="file"
+          id="imageUpload"
+          accept="image/*"
+          style="display: none"
+        >
+      </label>
+    </Button>
+    <Button
+      v-tooltip.top="$t('import')"
+      class="upload-wrapper-btn"
+    >
+      <label
+        for="imageUpload"
+      >
+        <i
+          :class="PrimeIcons.DOWNLOAD"
+          style="font-size: 1.5rem"
+        />
+      </label>
+      <input
+        @change="handleSelect($event,'json')"
+        type="file"
+        id="imageUpload"
+        accept="application/json"
+        style="display: none"
+      >
+    </Button>
+    <Button
+      :icon="PrimeIcons.SAVE"
+      v-tooltip.top="$t('save')"
+      severity="success"
+      @click="exportBoard"
+    />
+    <Button
+      :icon="PrimeIcons.REFRESH"
+      v-tooltip.top="$t('clear')"
+      severity="danger"
+      @click="clearBoard"
+    />
+  </div>
+</template>
+
 <style lang="scss" scoped>
 .actions {
+  button {
+    cursor: pointer;
+  }
+  &:hover{
+    opacity: 1;
+  }
+  transition: ease-in 200ms;
+  opacity: 0.7;
+  position: absolute;
+  bottom: 2vh;
+  background-color: white;
+  padding: 20px;
   display: flex;
-  margin: 5px;
+  left: 50%;
+  transform: translateX(-50%);
   gap: 5px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.3);
 }
 </style>

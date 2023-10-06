@@ -1,71 +1,3 @@
-<template>
-  <section>
-    <div>
-      <Dialog
-        v-model:visible="visible"
-        :dismissable-mask="true"
-        header="Ajoutez une nouvelle épingle"
-        modal
-        @after-hide="handleDialogClose"
-      >
-        <form @submit.prevent>
-          <label for="title">Titre</label>
-          <InputText
-            id="title"
-            v-model="newTag.title"
-            aria-describedby="title-help"
-            placeholder="..."
-          />
-          <br>
-          <label for="title">Ajoutez une description</label>
-          <Editor
-            id="description"
-            v-model="newTag.description"
-            editor-style="height: 350px"
-          />
-          <div class="pen-tool">
-            <label for="color">Couleur</label>
-            <ColorPicker
-              v-model="settings.color"
-              for="color"
-            />
-            <label for="size">Taille</label>
-            <div class="pen-tool-size">
-              <span
-                v-for="(size, index) in tagSizes"
-                :key="index"
-                :style="{ width: size, height: size }"
-                @click="changePinSize(size)"
-              />
-            </div>
-          </div>
-        </form>
-        <Button
-          label="Confirmer"
-          :disabled="isError"
-          @click="handleCreateTag"
-        />
-        <p
-          v-show="isError"
-          class="error-msg"
-        >
-          Le titre ne peut pas être vide.
-        </p>
-      </Dialog>
-      <div
-        id="board"
-        class="board"
-      >
-        <img
-          ref="boardImg"
-          :src="getBackgroundImg"
-          @click="handleClick"
-        >
-      </div>
-    </div>
-  </section>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useBoardStore } from '@/stores/board.store'
@@ -233,16 +165,86 @@ const getBackgroundImg = computed(() => {
   return board.value?.image
 })
 </script>
+<template>
+  <Dialog
+    v-model:visible="visible"
+    :dismissable-mask="true"
+    header="Ajoutez une nouvelle épingle"
+    modal
+    @after-hide="handleDialogClose"
+  >
+    <form @submit.prevent>
+      <label for="title">Titre</label>
+      <InputText
+        id="title"
+        v-model="newTag.title"
+        aria-describedby="title-help"
+        placeholder="..."
+      />
+      <br>
+      <label for="title">Ajoutez une description</label>
+      <Editor
+        id="description"
+        v-model="newTag.description"
+        editor-style="height: 350px"
+      />
+      <div class="pen-tool">
+        <label for="color">Couleur</label>
+        <ColorPicker
+          v-model="settings.color"
+          for="color"
+        />
+        <label for="size">Taille</label>
+        <div class="pen-tool-size">
+          <span
+            v-for="(size, index) in tagSizes"
+            :key="index"
+            :style="{ width: size, height: size }"
+            @click="changePinSize(size)"
+          />
+        </div>
+      </div>
+    </form>
+    <Button
+      label="Confirmer"
+      :disabled="isError"
+      @click="handleCreateTag"
+    />
+    <p
+      v-show="isError"
+      class="error-msg"
+    >
+      Le titre ne peut pas être vide.
+    </p>
+  </Dialog>
+  <section class="pinmap-wrapper">
+    <div
+      id="board"
+      class="board"
+    >
+      <img
+        ref="boardImg"
+        :src="getBackgroundImg"
+        @click="handleClick"
+      >
+    </div>
+  </section>
+</template>
+
 
 <style scoped lang="scss">
+.pinmap-wrapper{
+  display: flex;
+  justify-content: center;
+}
 .board {
   img {
     cursor: pointer;
     border-radius: 10px;
     box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    width: 800px;
-    height: 800px;
+    width: 600px;
+    height: 600px;
     object-fit: contain;
   }
 }
