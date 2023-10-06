@@ -1,32 +1,40 @@
 <template>
-  <Toast position="top-right" group="br" />
+  <Toast
+    position="top-right"
+    group="br"
+  />
   <div class="actions">
     <FileUpload
-      @select="handleSelect($event, 'select')"
       name="demo[]"
       mode="basic"
       accept="image/*"
-      chooseLabel="Importer une image"
-      :maxFileSize="10000000"
+      choose-label="Importer une image"
+      :max-file-size="10000000"
+      @select="handleSelect($event, 'select')"
     >
       <template #empty>
-        <p>Drag and drop files to here to upload.</p>
-        <img src="/not_found.jpg" />
+        <img src="/not_found.jpg">
       </template>
     </FileUpload>
     <FileUpload
-      chooseLabel="Importer JSON"
-      @select="handleSelect($event, 'import')"
+      choose-label="Importer JSON"
       name="demo[]"
       mode="basic"
       accept="application/json"
-      :maxFileSize="10000000"
-    >
-    </FileUpload>
-    <Button label="Save" @click="exportBoard" severity="success"></Button>
-    <Button label="Clear" @click="clearBoard" severity="danger"></Button>
+      :max-file-size="10000000"
+      @select="handleSelect($event, 'import')"
+    />
+    <Button
+      label="Save"
+      severity="success"
+      @click="exportBoard"
+    />
+    <Button
+      label="Clear"
+      severity="danger"
+      @click="clearBoard"
+    />
   </div>
- 
 </template>
 
 <script setup lang="ts">
@@ -35,13 +43,12 @@ import { useBoardStore } from '@/stores/board.store'
 import { storeToRefs } from 'pinia'
 import { downloadJSONFromLocalStorage, saveDataToLocalStorage } from '@/utils/save'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast' 
- 
+import Toast from 'primevue/toast'
+
 const backgroundStore = useBoardStore()
- 
+
 const { image, tags: tags } = storeToRefs(backgroundStore)
 const toast = useToast()
-
 
 function handleSelect(e: any, mode: 'import' | 'select') {
   const file = e.originalEvent.target.files[0]
@@ -70,7 +77,7 @@ function clearBoard() {
   localStorage.removeItem('tag-me-up-tags')
   const pinList = document.getElementById('board')
   if (pinList) {
-    var tagElements = pinList.querySelectorAll('.tag')
+    const tagElements = pinList.querySelectorAll('.tag')
     tagElements.forEach(function (element) {
       element.remove()
     })
@@ -87,7 +94,7 @@ function exportBoard() {
         summary: 'Success Message',
         detail: 'Tableau enregistré avec succes !',
         group: 'br',
-        life: 3000
+        life: 3000,
       })
     })
   } else {
@@ -96,7 +103,7 @@ function exportBoard() {
       summary: 'Action impossible',
       detail: 'Aucun tableau à enregistrer',
       group: 'br',
-      life: 3000
+      life: 3000,
     })
   }
 }
@@ -107,5 +114,4 @@ function exportBoard() {
   margin: 5px;
   gap: 5px;
 }
-
 </style>

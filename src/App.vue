@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import ToolBox from './components/organism/ToolBox.vue'
-import PinMap, { type Tag } from './components/organism/PinMap.vue'
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useBoardStore } from './stores/board.store'
 import { storeToRefs } from 'pinia'
+import PinMap, { type Tag } from './components/organism/PinMap.vue'
+import ToolBox from './components/organism/ToolBox.vue'
 import PinList from './components/organism/PinList.vue'
+import TagModal from './components/organism/TagModal.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-import TagModal from './components/organism/TagModal.vue'
+
 const boardStore = useBoardStore()
 const { image, tags } = storeToRefs(boardStore)
 const isDialogVisible = ref<boolean>(false)
@@ -18,7 +19,7 @@ function handleTagSelection(id: string) {
   if (previewTag) {
     console.log(previewTag)
     preview.value = previewTag
-    isDialogVisible.value=true
+    isDialogVisible.value = true
   }
 }
 
@@ -40,41 +41,61 @@ onMounted(() => {
 
 <template>
   <main>
-    <div v-show="!isDialogVisible" class="toggle-pin-list" @click="toggleDialog">
-      <Button icon="pi pi-check" rounded outlined aria-label="Filter"></Button>
+    <div
+      v-show="!isDialogVisible"
+      class="toggle-pin-list"
+      @click="toggleDialog"
+    >
+      <Button
+        icon="pi pi-check"
+        rounded
+        outlined
+        aria-label="Filter"
+      >
+        {{ '<' }}
+      </Button>
     </div>
     <ToolBox />
     <PinMap @click-tag="handleTagSelection" />
     <section>
-      <Dialog
-        maximizable
+      <Dialog    
+        v-if="preview"
         v-model:visible="isDialogVisible"
+        :dismissable-mask="true"
+        :header="preview.title"
+        maximizable
         close-on-escape
         modal
-        :dismissableMask="true"
         @after-hide="handleDialogClose"
-        v-if="preview"
       >
         <TagModal :preview="preview" />
       </Dialog>
       <Dialog
         v-else
+        v-model:visible="isDialogVisible"
         maximizable
         position="right"
-        v-model:visible="isDialogVisible"
         close-on-escape
         modal
-        :dismissableMask="true"
+        :dismissable-mask="true"
       >
         <template #header>
           <h3>
-            Retrouvez ici toutes vos épingles <br />
+            Retrouvez ici toutes vos épingles <br>
             (plus pratique que de chercher sur l'image 😎✌️)
           </h3>
         </template>
-        <PinList @click-tag="handleTagSelection" :tags="tags" />
+        <PinList
+          :tags="tags"
+          @click-tag="handleTagSelection"
+        />
         <template #footer>
-          <Button label="Tout Supprimer" icon="pi pi-times" severity="danger" raised></Button>
+          <Button
+            label="Tout Supprimer"
+            icon="pi pi-times"
+            severity="danger"
+            raised
+          />
         </template>
       </Dialog>
     </section>
@@ -82,15 +103,14 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.p-dialog {
-  // width: 50vw;
-}
+
 .toggle-pin-list {
   position: absolute;
   z-index: 10;
   right: 2vw;
   top: 50vh;
   transition: ease-in-out 100ms;
+
   &:hover {
     scale: 1.1;
   }

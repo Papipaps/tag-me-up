@@ -1,9 +1,22 @@
 <template>
-  <ul class="pin-list" v-if="tags">
-    <li v-for="tag in tags" :key="tag.id">
-      <PinCard :tag="tag" @click="openTag(tag.id)" @mouseover="highlightPoint(tag.id)" />
+  <ul
+    v-if="tags && tags.length"
+    class="pin-list"
+  >
+    <li
+      v-for="tag in tags"
+      :key="tag.id"
+    >
+      <PinCard
+        :tag="tag"
+        @click="openTag(tag.id)"
+        @mouseover="highlightPoint(tag.id)"
+      />
     </li>
   </ul>
+  <p v-else>
+    Vous n'avez aucun tag
+  </p>
 </template>
 
 <script setup lang="ts">
@@ -21,7 +34,7 @@ function highlightPoint(id: string) {
   if (preview) {
     const mouseEnterEvent = new MouseEvent('mouseover', {
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     })
 
     preview.dispatchEvent(mouseEnterEvent)
@@ -29,7 +42,7 @@ function highlightPoint(id: string) {
     setTimeout(() => {
       const mouseLeaveEvent = new MouseEvent('mouseleave', {
         bubbles: true,
-        cancelable: true
+        cancelable: true,
       })
 
       preview.dispatchEvent(mouseLeaveEvent)
@@ -50,10 +63,7 @@ function openTag(id: string) {
   list-style: none;
   padding: 0 10px;
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(200px, 1fr)
-  ); /* Changez les valeurs selon vos besoins */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Changez les valeurs selon vos besoins */
   li {
     margin-bottom: 5px;
     background: white;

@@ -2,13 +2,13 @@
   <section>
     <div>
       <Dialog
-        @after-hide="handleDialogClose"
-        :dismissableMask="true"
         v-model:visible="visible"
+        :dismissable-mask="true"
         header="Ajoutez une nouvelle épingle"
         modal
+        @after-hide="handleDialogClose"
       >
-        <form @submit.prevent="">
+        <form @submit.prevent>
           <label for="title">Titre</label>
           <InputText
             id="title"
@@ -16,12 +16,19 @@
             aria-describedby="title-help"
             placeholder="..."
           />
-          <br />
+          <br>
           <label for="title">Ajoutez une description</label>
-          <Editor editor-style="height: 350px" id="description" v-model="newTag.description" />
+          <Editor
+            id="description"
+            v-model="newTag.description"
+            editor-style="height: 350px"
+          />
           <div class="pen-tool">
             <label for="color">Couleur</label>
-            <ColorPicker v-model="settings.color" for="color"></ColorPicker>
+            <ColorPicker
+              v-model="settings.color"
+              for="color"
+            />
             <label for="size">Taille</label>
             <div class="pen-tool-size">
               <span
@@ -29,16 +36,31 @@
                 :key="index"
                 :style="{ width: size, height: size }"
                 @click="changePinSize(size)"
-              ></span>
+              />
             </div>
           </div>
         </form>
-        <Button label="Confirmer" :disabled="isError" @click="handleCreateTag"></Button>
-        <p v-show="isError" class="error-msg">Le titre ne peut pas être vide.</p>
+        <Button
+          label="Confirmer"
+          :disabled="isError"
+          @click="handleCreateTag"
+        />
+        <p
+          v-show="isError"
+          class="error-msg"
+        >
+          Le titre ne peut pas être vide.
+        </p>
       </Dialog>
-      <div id="board" class="board">
-        <!-- Liste des épingles -->
-        <img @click="handleClick" :src="getBackgroundImg" ref="boardImg" />
+      <div
+        id="board"
+        class="board"
+      >
+        <img
+          ref="boardImg"
+          :src="getBackgroundImg"
+          @click="handleClick"
+        >
       </div>
     </div>
   </section>
@@ -77,7 +99,7 @@ const initialState: Tag = {
   size: '',
   title: '',
   x: 0,
-  y: 0
+  y: 0,
 }
 const settingsStore = useSettingsStore()
 const boardStore = useBoardStore()
@@ -89,7 +111,7 @@ const visible = ref<boolean>(false)
 const tagSizes = {
   small: '15px',
   medium: '20px',
-  large: '25px'
+  large: '25px',
 }
 const emit = defineEmits(['click-tag'])
 
@@ -117,7 +139,7 @@ function handleHighlightPoint(id: string) {
   if (preview) {
     const mouseEnterEvent = new MouseEvent('mouseover', {
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     })
 
     preview.dispatchEvent(mouseEnterEvent)
@@ -125,7 +147,7 @@ function handleHighlightPoint(id: string) {
     setTimeout(() => {
       const mouseLeaveEvent = new MouseEvent('mouseleave', {
         bubbles: true,
-        cancelable: true
+        cancelable: true,
       })
 
       preview.dispatchEvent(mouseLeaveEvent)
@@ -143,9 +165,9 @@ function handleCreateTag() {
       id: id,
       title: tagTitle,
       size: settings.value.size,
-      color: '#' + settings.value.color
+      color: '#' + settings.value.color,
     }
-    createPoint(newTag.value)
+    displayPoint(newTag.value)
     board.value?.tags.push(newTag.value)
     saveDataToLocalStorage('tag-me-up-image', board.value.image)
     saveDataToLocalStorage('tag-me-up-tags', board.value.tags)
@@ -155,7 +177,7 @@ function handleCreateTag() {
   }
 }
 
-function createPoint(point: Tag) {
+function displayPoint(point: Tag) {
   const wrapper = document.getElementById('board')
   const span = document.createElement('span')
   span.title = point.title
@@ -197,7 +219,7 @@ watch(
     // saveDataToLocalStorage('tag-me-up-image', image)
     board.value = { image: image.value.toString(), tags: tags.value }
     tags.value.map((tag) => {
-      createPoint(tag)
+      displayPoint(tag)
     })
   },
   { immediate: true }
@@ -224,9 +246,11 @@ const getBackgroundImg = computed(() => {
     object-fit: contain;
   }
 }
+
 section {
   display: flex;
 }
+
 .error-msg {
   color: red;
 }
@@ -234,15 +258,19 @@ section {
 .pen-tool {
   display: flex;
 }
+
 .pen-tool-size {
   display: flex;
   align-items: center;
   gap: 5px;
+
   span {
     margin: 0 5px;
+
     &:hover {
       cursor: pointer;
     }
+
     border-radius: 50%;
     background-color: black;
     border: '1px solid red';
